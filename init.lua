@@ -39,6 +39,8 @@ vim.keymap.set('v', 'r', '$', { noremap = true, silent = true })
 vim.keymap.set('n', '<Tab>', ':bnext<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<S-Tab>', ':bprevious<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>cp', ':Telescope neoclip<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>fb', ':Telescope buffers<CR>', { noremap = true, silent = true })
+
 vim.keymap.set('n', '|', ':vsplit<CR>')
 vim.keymap.set('n', '+', ':split<CR>')
 
@@ -136,6 +138,13 @@ require('lazy').setup {
     end,
   },
 
+   'hrsh7th/nvim-cmp',
+  'hrsh7th/cmp-nvim-lsp',
+  'L3MON4D3/LuaSnip',
+  'saadparwaiz1/cmp_luasnip',
+  'hrsh7th/cmp-buffer',
+  'hrsh7th/cmp-path',
+  'saadparwaiz1/cmp_luasnip',
   'neovim/nvim-lspconfig',
   'williamboman/mason.nvim',
   'williamboman/mason-lspconfig.nvim',
@@ -287,3 +296,11 @@ vim.keymap.set("n", "<leader>ff", builtin.find_files, { noremap = true, silent =
 
 -- Find Word with `<leader>f w`
 vim.keymap.set("n", "<leader>fw", builtin.live_grep, { noremap = true, silent = true, desc = "Find Word" })
+
+
+vim.keymap.set('n', '<C-h>', '<C-w>h', { noremap = true, silent = true }) -- Move to the left pane
+vim.keymap.set('n', '<C-j>', '<C-w>j', { noremap = true, silent = true }) -- Move to the below pane
+vim.keymap.set('n', '<C-k>', '<C-w>k', { noremap = true, silent = true }) -- Move to the above pane
+vim.keymap.set('n', '<C-l>', '<C-w>l', { noremap = true, silent = true }) -- Move to the right pane
+
+
