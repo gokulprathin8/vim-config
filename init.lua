@@ -24,6 +24,7 @@ vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 
+
 -- Clipboard sync
 vim.schedule(function()
   vim.opt.clipboard = 'unnamedplus'
@@ -44,6 +45,10 @@ vim.keymap.set('n', '<leader>fb', ':Telescope buffers<CR>', { noremap = true, si
 vim.keymap.set('n', '|', ':vsplit<CR>')
 vim.keymap.set('n', '+', ':split<CR>')
 
+-- external files
+-- require('kickstart.plugins.lsp')
+
+
 -- Lazy.nvim Plugin Manager Setup
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not vim.loop.fs_stat(lazypath) then
@@ -54,12 +59,13 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup {
   -- Kickstart's Default Plugins
   'tpope/vim-sleuth',
-  { 'folke/which-key.nvim', opts = {} },
-  { 'lewis6991/gitsigns.nvim', opts = {} },
+  'hrsh7th/cmp-nvim-lsp',
+  { 'folke/which-key.nvim',            opts = {} },
+  { 'lewis6991/gitsigns.nvim',         opts = {} },
   { 'nvim-treesitter/nvim-treesitter', build = ':TSUpdate' },
-  { 'nvim-telescope/telescope.nvim', dependencies = { 'nvim-lua/plenary.nvim' } },
-  'numToStr/Comment.nvim', 
-  { 'folke/tokyonight.nvim', priority = 1000 },
+  { 'nvim-telescope/telescope.nvim',   dependencies = { 'nvim-lua/plenary.nvim' } },
+  'numToStr/Comment.nvim',
+  { 'folke/tokyonight.nvim',         priority = 1000 },
 
   -- Your Custom Plugins
   { 'rebelot/kanagawa.nvim' }, -- Keep your alternative theme available
@@ -91,7 +97,7 @@ require('lazy').setup {
       require('telescope').load_extension 'neoclip'
     end,
   },
-    { -- Collection of various small independent plugins/modules
+  { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
     config = function()
       -- Better Around/Inside textobjects
@@ -138,7 +144,7 @@ require('lazy').setup {
     end,
   },
 
-   'hrsh7th/nvim-cmp',
+  'hrsh7th/nvim-cmp',
   'hrsh7th/cmp-nvim-lsp',
   'L3MON4D3/LuaSnip',
   'saadparwaiz1/cmp_luasnip',
@@ -147,7 +153,36 @@ require('lazy').setup {
   'saadparwaiz1/cmp_luasnip',
   'neovim/nvim-lspconfig',
   'williamboman/mason.nvim',
-  'williamboman/mason-lspconfig.nvim',
+  {
+    "williamboman/mason-lspconfig.nvim",
+    dependencies = { "neovim/nvim-lspconfig" },
+    config = function()
+      require("mason-lspconfig").setup {
+        ensure_installed = {
+          "lua_ls",
+          "ts_ls",
+          "eslint",
+          "html",
+          "cssls",
+          "jsonls",
+          "emmet_ls",
+
+          "rust_analyzer",
+          "clangd",
+
+          "pyright",
+          "bashls",
+          "gopls",
+          "dockerls",
+          "yamlls",
+          "marksman",
+
+        },
+
+        automatic_installation = true,
+      }
+    end
+  },
   { 'folke/tokyonight.nvim', priority = 1000 },
   'nvim-lualine/lualine.nvim',
   'nvim-tree/nvim-tree.lua',
@@ -276,8 +311,10 @@ vim.keymap.set("n", "--", ":noh<CR>", { noremap = true, silent = true })
 
 require('kanagawa').setup({ theme = "dragon" })
 vim.cmd.colorscheme('kanagawa-dragon')
-vim.keymap.set("n", "<leader>/", "<cmd>lua require('Comment.api').toggle.linewise.current()<CR>", { noremap = true, silent = true, desc = "Toggle comment" })
-vim.keymap.set("v", "<leader>/", "<ESC><cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>", { noremap = true, silent = true, desc = "Toggle comment" })
+vim.keymap.set("n", "<leader>/", "<cmd>lua require('Comment.api').toggle.linewise.current()<CR>",
+  { noremap = true, silent = true, desc = "Toggle comment" })
+vim.keymap.set("v", "<leader>/", "<ESC><cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>",
+  { noremap = true, silent = true, desc = "Toggle comment" })
 
 -- Move lines up and down in normal mode
 vim.keymap.set("n", "<C-j>", ":m .+1<CR>==", { noremap = true, silent = true, desc = "Move line down" })
@@ -287,8 +324,6 @@ vim.keymap.set("n", "<C-k>", ":m .-2<CR>==", { noremap = true, silent = true, de
 vim.keymap.set("v", "<C-j>", ":m '>+1<CR>gv=gv", { noremap = true, silent = true, desc = "Move selection down" })
 vim.keymap.set("v", "<C-k>", ":m '<-2<CR>gv=gv", { noremap = true, silent = true, desc = "Move selection up" })
 
-
--- Telescope Setup
 local builtin = require('telescope.builtin')
 
 -- Find Files with `<leader>f f`
@@ -304,3 +339,64 @@ vim.keymap.set('n', '<C-k>', '<C-w>k', { noremap = true, silent = true }) -- Mov
 vim.keymap.set('n', '<C-l>', '<C-w>l', { noremap = true, silent = true }) -- Move to the right pane
 
 
+
+require("mason-lspconfig").setup_handlers({
+  -- This handler will be called for *every* installed server that doesn't have
+  -- a dedicated handler below.
+  function(server_name)
+    require("lspconfig")[server_name].setup {
+      on_attach = function(client, bufnr)
+        -- Optionally define or import a custom `on_attach` you like
+        -- e.g., enable LSP keymaps, etc.
+        --
+        -- Example keymaps:
+        local opts = { noremap = true, silent = true, buffer = bufnr }
+        vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+        vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+        vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+        vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
+        vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
+        -- ...plus anything else you typically do...
+      end,
+      capabilities = require("cmp_nvim_lsp").default_capabilities(),
+    }
+  end,
+
+  -- Now, for any servers that need special config, define them below by name:
+  ["emmet_ls"] = function()
+    require("lspconfig").emmet_ls.setup {
+      on_attach = function(client, bufnr)
+        -- same idea as the default on_attach above...
+      end,
+      capabilities = require("cmp_nvim_lsp").default_capabilities(),
+      filetypes = { "html", "css", "javascriptreact", "typescriptreact", "vue", "svelte" },
+      init_options = {
+        html = {
+          options = {
+            ["output.selfClosingStyle"] = "xhtml"
+          }
+        }
+      }
+    }
+  end,
+
+  -- Example: specialized config for "lua_ls"
+  ["lua_ls"] = function()
+    require("lspconfig").lua_ls.setup {
+      on_attach = function(client, bufnr)
+        -- same idea as the default on_attach above...
+      end,
+      capabilities = require("cmp_nvim_lsp").default_capabilities(),
+      settings = {
+        Lua = {
+          diagnostics = {
+            globals = { "vim" },
+          },
+          telemetry = { enable = false },
+        }
+      }
+    }
+  end,
+
+  -- Add more specialized server overrides here...
+})
